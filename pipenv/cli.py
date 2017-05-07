@@ -106,15 +106,15 @@ def ensure_pipfile(validate=True):
             # Since we're not making any network calls, it's initialized to nothing.
             reqs = [r.req for r in parse_requirements(project.requirements_location, session='')]
 
-            for package in reqs:
-                if package.name not in BAD_PACKAGES:
-                    project.add_package_to_pipfile(str(package))
+            # Parse out reserved packages from install list.
+            packages = [str(package) for package in reqs if package.name not in BAD_PACKAGES]
+            project.add_packages_to_pipfile(package)
 
         else:
             click.echo(crayons.yellow('Creating a Pipfile for this project...'), err=True)
             # Create the pipfile if it doesn't exist.
             project.create_pipfile()
-
+        
     # Validate the Pipfile's contents.
     if validate and project.virtualenv_exists:
         # Ensure that Pipfile is using proper casing.
