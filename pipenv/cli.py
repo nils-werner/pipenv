@@ -852,7 +852,7 @@ def install(package_name=False, more_packages=False, dev=False, three=False, pyt
 
         # Add the package to the Pipfile.
         try:
-            project.add_package_to_pipfile(package_name, dev)
+            project.add_packages_to_pipfile(package_name, dev)
         except ValueError as e:
             click.echo('{0} {1}'.format(crayons.red('ERROR (PACKAGE NOT INSTALLED):'), e))
 
@@ -910,17 +910,10 @@ def uninstall(package_name=False, more_packages=False, three=None, python=False,
         c = delegator.run('"{0}" uninstall {1} -y'.format(which_pip(allow_global=system), package_name))
         click.echo(crayons.blue(c.out))
 
-        if pipfile_remove:
-            norm_name = pep423_name(package_name)
-            if norm_name in project._pipfile.get('dev-packages', {}) or norm_name in project._pipfile.get('packages', {}):
-                click.echo('Removing {0} from Pipfile...'.format(crayons.green(package_name)))
-            else:
-                click.echo('No package {0} to remove from Pipfile.'.format(crayons.green(package_name)))
-                continue
-
-            # Remove package from both packages and dev-packages.
-            project.remove_package_from_pipfile(package_name, dev=True)
-            project.remove_package_from_pipfile(package_name, dev=False)
+    if pipfile_remove:
+        # Remove package(s) from both packages and dev-packages.
+        project.remove_packages_from_pipfile(package_names, dev=True)
+        project.remove_packages_from_pipfile(package_names, dev=False)
 
     if lock:
         do_lock(no_hashes=no_hashes)

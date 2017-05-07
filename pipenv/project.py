@@ -215,23 +215,30 @@ class Project(object):
         else:
             return [{u'url': u'https://pypi.python.org/simple', u'verify_ssl': True}]
 
-    def remove_package_from_pipfile(self, package_name, dev=False):
+    def remove_packages_from_pipfile(self, package_names, dev=False):
 
         # Read and append Pipfile.
         p = self._pipfile
 
-        package_name = pep423_name(package_name)
-
         key = 'dev-packages' if dev else 'packages'
 
-        if key in p and package_name in p[key]:
-            del p[key][package_name]
+        if not isinstance(package_names, list):
+            package_names = [package_names]
+
+        for package_name in package_names:
+            package_name = pep423_name(package_name)
+
+            if key in p and package_name in p[key]:
+                del p[key][package_name]
 
         # Write Pipfile.
         self.write_toml(recase_file(p))
 
-    def add_package_to_pipfile(self, package_name, dev=False):
-
+    def add_packages_to_pipfile(self, package_names, dev=False):
+        """
+        Takes a pip-style (package==x.x.x) package_name, or list of package names,
+        and adds them to the Pipfile in valid TOML syntax.
+        """
         # Read and append Pipfile.
         p = self._pipfile
 
@@ -241,11 +248,15 @@ class Project(object):
         if key not in p:
             p[key] = {}
 
-        package = convert_deps_from_pip(package_name)
-        package_name = [k for k in package.keys()][0]
+        if not isinstance(package_names, list):
+            package_names = [package_names]
 
-        # Add the package to the group.
-        p[key][package_name] = package[package_name]
+        for package_name in package_names:
+            package = convert_deps_from_pip(package_name)
+            package_name = [k for k in package.keys()][0]
+
+            # Add the package to the group.
+            p[key][package_name] = package[package_name]
 
         # Write Pipfile.
         self.write_toml(recase_file(p))
