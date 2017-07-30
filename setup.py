@@ -26,6 +26,14 @@ required = [
     'pip'
 ]
 
+from glob import glob
+import os
+
+def find_dirs(dir_name):
+    for dir, dirs, files in os.walk('.'):
+        if dir_name in dirs:
+            yield os.path.relpath(os.path.join(dir, dir_name))
+
 if sys.version_info < (2, 7):
     required.append('requests[security]')
     required.append('ordereddict')
@@ -36,6 +44,7 @@ setup(
     description='Sacred Marriage of Pipfile, Pip, & Virtualenv.',
     long_description=long_description,
     author='Kenneth Reitz',
+    data_files=[('share/man/man1', ['man/pipenv.1'])],
     author_email='me@kennethreitz.org',
     url='https://github.com/kennethreitz/pipenv',
     packages=[
